@@ -1,0 +1,17 @@
+{
+  "name": "HexaFlow Cashflow",
+  "short_name": "HexaFlow",
+  "description": "Aplikasi pengatur keuangan pribadi yang cepat dan elegan.",
+  "start_url": "./mobile-dashboard.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#84cc16",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2611/2611174.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
