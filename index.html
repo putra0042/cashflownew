@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>NexaFlow Mobile</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2611/2611174.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .neon-shadow { box-shadow: 0 8px 25px -5px rgba(132, 204, 22, 0.5); }
+        ::-webkit-scrollbar { display: none; } 
+        
+        .sheet-enter { transform: translateY(100%); opacity: 0; }
+        .sheet-enter-active { transform: translateY(0); opacity: 1; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sheet-leave { transform: translateY(0); opacity: 1; }
+        .sheet-leave-active { transform: translateY(100%); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        ::-webkit-calendar-picker-indicator { opacity: 0.5; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen relative overflow-x-hidden">
+
+    <div id="mainContent" class="max-w-md mx-auto relative min-h-screen pb-28">
+        
+        <header class="p-6 flex justify-between items-center bg-slate-50 sticky top-0 z-10 backdrop-blur-md bg-opacity-80">
+            <div>
+                <p class="text-slate-500 text-sm font-medium">Selamat datang,</p>
+                <h1 class="text-2xl font-extrabold tracking-tight text-slate-800 flex items-center gap-2 cursor-pointer active:opacity-70 transition-opacity" onclick="editName()">
+                    <span id="userName">Pengguna</span>! 👋
+                    <i class="fa-solid fa-pen text-[10px] text-slate-400 mb-1"></i>
+                </h1>
+            </div>
+            <div class="w-11 h-11 bg-white shadow-sm border border-slate-100 rounded-full flex items-center justify-center text-lime-500 text-lg">
+               <i class="fa-solid fa-user"></i>
+            </div>
+        </header>
+
+        <div class="mx-6 p-6 bg-gradient-to-tr from-lime-500 to-lime-400 rounded-[2rem] text-white neon-shadow relative overflow-hidden">
+            <div class="absolute -right-6 -top-6 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+            <div class="relative z-10">
+                <p class="text-lime-50 text-sm font-medium mb-1 flex items-center">
+                    <i class="fa-solid fa-wallet mr-2 opacity-80"></i> Total Saldo Aktif
+                </p>
+                <h2 id="mobileBalance" class="text-[2.5rem] font-extrabold leading-tight tracking-tight">Rp 0</h2>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mx-6 mt-6">
+            <div class="bg-white p-5 rounded-[1.5rem] shadow-sm border border-slate-100 flex flex-col justify-center">
+                <div class="w-10 h-10 bg-lime-50 rounded-full flex items-center justify-center text-lime-500 mb-3">
+                    <i class="fa-solid fa-arrow-trend-up text-lg"></i>
+                </div>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Pemasukan</p>
+                <p id="mobileIncome" class="text-lg font-bold text-slate-800">Rp 0</p>
+            </div>
+            <div class="bg-white p-5 rounded-[1.5rem] shadow-sm border border-slate-100 flex flex-col justify-center">
+                <div class="w-10 h-10 bg-rose-50 rounded-full flex items-center justify-center text-rose-500 mb-3">
+                    <i class="fa-solid fa-arrow-trend-down text-lg"></i>
+                </div>
+                <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Pengeluaran</p>
+                <p id="mobileExpense" class="text-lg font-bold text-slate-800">Rp 0</p>
+            </div>
+        </div>
+
+        <div class="mx-6 mt-8">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="font-bold text-lg text-slate-800">Aktivitas Terkini</h3>
+                <span class="text-slate-400 text-sm font-medium" id="transactionCount">0 Transaksi</span>
+            </div>
+
+            <div id="recentList" class="space-y-3">
+                 <div id="mobileEmptyState" class="hidden bg-white p-8 rounded-3xl text-center text-slate-400 shadow-sm border border-slate-100">
+                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-receipt text-2xl text-slate-300"></i>
+                    </div>
+                    <p class="text-sm font-medium text-slate-500">Belum ada transaksi</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-6 left-0 right-0 flex justify-center z-20 pointer-events-none">
+        <button onclick="openModal()" class="pointer-events-auto bg-lime-500 hover:bg-lime-600 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-xl shadow-lime-500/30 text-2xl transition-transform active:scale-95">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+    </div>
+
+    <div id="addModal" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none hidden">
+        <div id="modalOverlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300 pointer-events-none" onclick="closeModal()"></div>
+        
+        <div id="modalSheet" class="bg-white rounded-t-[2.5rem] p-6 pb-10 relative z-10 pointer-events-auto sheet-enter h-[85vh] flex flex-col shadow-2xl">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-slate-800">Catat Transaksi</h2>
+                <button onclick="closeModal()" class="w-8 h-8 bg-slate-100 rounded-full text-slate-500 flex items-center justify-center active:scale-90 transition-transform">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="transactionForm" class="space-y-4 overflow-y-auto flex-1 pr-2">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Jenis</label>
+                        <select id="type" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl p-3.5 focus:ring-2 focus:ring-lime-500 focus:border-lime-500 outline-none" onchange="updateCategoryOptions()" required>
+                            <option value="expense">Pengeluaran</option>
+                            <option value="income">Pemasukan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Kategori</label>
+                        <select id="category" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl p-3.5 focus:ring-2 focus:ring-lime-500 focus:border-lime-500 outline-none" required>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Tanggal</label>
+                    <input type="date" id="date" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl p-3.5 focus:ring-2 focus:ring-lime-500 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Keterangan</label>
+                    <input type="text" id="description" placeholder="Makan siang..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl p-3.5 focus:ring-2 focus:ring-lime-500 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Jumlah (Rp)</label>
+                    <input type="number" id="amount" placeholder="50000" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl p-3.5 focus:ring-2 focus:ring-lime-500 outline-none text-lg font-bold" required>
+                </div>
+            </form>
+            
+            <div class="mt-4 pt-4 border-t border-slate-100">
+                <button onclick="document.getElementById('transactionForm').requestSubmit()" class="w-full bg-lime-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-lime-500/30 active:scale-95 transition-transform text-lg">
+                    Simpan Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fitur Ganti Nama (Tersimpan di LocalStorage)
+        const savedName = localStorage.getItem('userDisplayName') || 'Sultan';
+        document.getElementById('userName').innerText = savedName;
+
+        window.editName = () => {
+            const currentName = localStorage.getItem('userDisplayName') || 'Sultan';
+            const newName = prompt('Masukkan nama panggilan Anda:', currentName);
+            
+            if (newName && newName.trim() !== '') {
+                localStorage.setItem('userDisplayName', newName.trim());
+                document.getElementById('userName').innerText = newName.trim();
+            }
+        };
+
+        // Data & State
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        const categories = {
+            expense: ['Makan & Minum', 'Transportasi', 'Belanja', 'Tagihan & Utang', 'Hiburan', 'Kesehatan', 'Lainnya'],
+            income: ['Gaji', 'Bonus', 'Hasil Usaha', 'Investasi', 'Lainnya']
+        };
+
+        const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        const formatCompact = (angka) => {
+            if (angka >= 1000000) return (angka / 1000000).toFixed(1).replace(/\.0$/, '') + 'jt';
+            if (angka >= 1000) return (angka / 1000).toFixed(1).replace(/\.0$/, '') + 'rb';
+            return formatRupiah(angka).replace('Rp', '').trim();
+        };
+
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+        const updateCategoryOptions = () => {
+            const type = document.getElementById('type').value;
+            const select = document.getElementById('category');
+            select.innerHTML = categories[type].map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        };
+
+        const renderUI = () => {
+            const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+            const expense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+            
+            document.getElementById('mobileBalance').innerText = formatRupiah(income - expense);
+            document.getElementById('mobileIncome').innerText = formatRupiah(income);
+            document.getElementById('mobileExpense').innerText = formatRupiah(expense);
+            document.getElementById('transactionCount').innerText = `${transactions.length} Transaksi`;
+
+            const list = document.getElementById('recentList');
+            const emptyState = document.getElementById('mobileEmptyState');
+            list.innerHTML = '';
+
+            if (transactions.length === 0) {
+                emptyState.classList.remove('hidden');
+                list.appendChild(emptyState);
+            } else {
+                emptyState.classList.add('hidden');
+                const sorted = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                sorted.forEach(t => {
+                    let icon = 'fa-bag-shopping';
+                    if(t.category.includes('Makan')) icon = 'fa-utensils';
+                    else if(t.category.includes('Transport')) icon = 'fa-car';
+                    else if(t.category.includes('Tagihan')) icon = 'fa-file-invoice';
+                    else if(t.type === 'income') icon = 'fa-money-bill-wave';
+
+                    const originalIndex = transactions.findIndex(orig => orig.id === t.id);
+                    const item = document.createElement('div');
+                    item.className = "bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between group active:bg-slate-50 transition-colors";
+                    item.innerHTML = `
+                        <div class="flex items-center overflow-hidden">
+                            <div class="min-w-[48px] h-12 ${t.type === 'income' ? 'bg-lime-50 text-lime-500' : 'bg-slate-50 text-slate-400'} rounded-full flex items-center justify-center text-lg mr-3">
+                                <i class="fa-solid ${icon}"></i>
+                            </div>
+                            <div class="truncate pr-2">
+                                <h4 class="font-bold text-slate-800 text-[0.95rem] truncate">${t.description}</h4>
+                                <p class="text-xs text-slate-400 mt-0.5">${t.category} • ${new Date(t.date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short'})}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 shrink-0">
+                            <p class="font-bold ${t.type === 'income' ? 'text-lime-500' : 'text-slate-800'} text-right">
+                                ${t.type === 'income' ? '+' : '-'}${formatCompact(t.amount)}
+                            </p>
+                            <button onclick="deleteTx(${originalIndex})" class="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center active:scale-90 transition-transform">
+                                <i class="fa-solid fa-trash-can text-sm"></i>
+                            </button>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+        };
+
+        document.getElementById('transactionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const tx = {
+                id: Date.now(),
+                type: document.getElementById('type').value,
+                category: document.getElementById('category').value,
+                date: document.getElementById('date').value,
+                description: document.getElementById('description').value,
+                amount: parseFloat(document.getElementById('amount').value)
+            };
+            transactions.push(tx);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            
+            document.getElementById('description').value = '';
+            document.getElementById('amount').value = '';
+            
+            renderUI();
+            closeModal();
+        });
+
+        window.deleteTx = (index) => {
+            if(confirm('Hapus transaksi ini?')) {
+                transactions.splice(index, 1);
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                renderUI();
+            }
+        };
+
+        const modal = document.getElementById('addModal');
+        const overlay = document.getElementById('modalOverlay');
+        const sheet = document.getElementById('modalSheet');
+
+        window.openModal = () => {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-100', 'pointer-events-auto');
+                sheet.classList.remove('sheet-enter');
+                sheet.classList.add('sheet-enter-active');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.closeModal = () => {
+            overlay.classList.remove('opacity-100', 'pointer-events-auto');
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            sheet.classList.remove('sheet-enter-active');
+            sheet.classList.add('sheet-leave-active');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                sheet.classList.remove('sheet-leave-active');
+                sheet.classList.add('sheet-enter');
+                document.body.style.overflow = ''; 
+            }, 300);
+        };
+
+        updateCategoryOptions();
+        renderUI();
+    </script>
+</body>
+</html>
