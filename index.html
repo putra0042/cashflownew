@@ -10,10 +10,10 @@
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2611/2611174.png">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .neon-shadow { box-shadow: 0 8px 25px -5px rgba(132, 204, 22, 0.5); }
@@ -25,12 +25,64 @@
         .sheet-leave-active { transform: translateY(100%); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         
         ::-webkit-calendar-picker-indicator { opacity: 0.5; }
+
+        /* Animasi layarkunci */
+        .fade-out { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+        }
+        .shake-error { animation: shake 0.4s ease-in-out; color: #ef4444 !important; }
+        
+        /* Animasi Pulse untuk tombol Fingerprint */
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(132, 204, 22, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(132, 204, 22, 0); }
+        }
+        .biometric-btn { animation: pulse-glow 2s infinite; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen relative overflow-x-hidden">
+<body class="bg-slate-50 text-slate-800 min-h-screen relative overflow-hidden" id="bodyWrap">
 
-    <div id="mainContent" class="max-w-md mx-auto relative min-h-screen pb-28">
-        
+    <div id="loginScreen" class="fixed inset-0 z-[100] bg-slate-900 flex flex-col items-center justify-between pb-12 pt-20">
+        <div class="text-center flex flex-col items-center">
+            <div class="w-16 h-16 bg-lime-500 rounded-2xl flex items-center justify-center text-white text-3xl mb-4 shadow-lg shadow-lime-500/30">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-white tracking-wide">NexaFlow</h1>
+            <p id="pinMessage" class="text-slate-400 mt-2 text-sm transition-colors duration-300">Masukkan PIN Keamanan Anda</p>
+        </div>
+
+        <div id="pinDots" class="flex gap-4 my-6">
+            <div class="w-4 h-4 rounded-full border-2 border-slate-600 transition-colors duration-200"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-slate-600 transition-colors duration-200"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-slate-600 transition-colors duration-200"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-slate-600 transition-colors duration-200"></div>
+        </div>
+
+        <button id="btnBiometric" onclick="verifyBiometric()" class="hidden biometric-btn mb-4 w-14 h-14 bg-slate-800 rounded-full text-lime-400 text-2xl flex items-center justify-center border border-lime-500/30 active:scale-95 transition-transform">
+            <i class="fa-solid fa-fingerprint"></i>
+        </button>
+
+        <div class="grid grid-cols-3 gap-x-8 gap-y-4 px-8 max-w-sm w-full">
+            <button onclick="pressKey('1')" class="h-16 rounded-full text-2xl text-white font-semibold active:bg-slate-800 transition-colors">1</button>
+            <button onclick="pressKey('2')" class="h-16 rounded-full text-2xl text-white font-semibold active:bg-slate-800 transition-colors">2</button>
+            <button onclick="pressKey('3')" class="h-16 rounded-full text-2xl text-white font-semibold active:bg-slate-800 transition-colors">3</button>
+            <button onclick="pressKey('4')" class="h-16 rounded-full text-2xl text-white font-semibold active:bg-slate-800 transition-colors">4</button>
+            <button onclick="pressKey('5')" class="h-16 rounded-full text-2xl text-white font-semibold active:bg-slate-800 transition-colors">5</button>
+            <button onclick="pressKey('6')" class="h-16 rounded-full text-2xl text-white font-semibold active:bg-slate-800 transition-colors">6</button>
+            <button onclick="pressKey('7')" class="h-16 rounded-full text-2xl text-white font-semibold active:bg-slate-800 transition-colors">7</button>
+            <button onclick="pressKey('8')" class="h-16 rounded-full text-2xl text-white font-semibold active:bg-slate-800 transition-colors">8</button>
+            <button onclick="pressKey('9')" class="h-16 rounded-full text-2xl text-white font-semibold active:bg-slate-800 transition-colors">9</button>
+            <button onclick="resetPinApp()" class="h-16 rounded-full text-sm text-slate-500 font-medium active:text-white transition-colors">Lupa?</button>
+            <button onclick="pressKey('0')" class="h-16 rounded-full text-2xl text-white font-semibold active:bg-slate-800 transition-colors">0</button>
+            <button onclick="deleteKey()" class="h-16 rounded-full text-xl text-slate-400 active:text-white transition-colors"><i class="fa-solid fa-delete-left"></i></button>
+        </div>
+    </div>
+    <div id="mainContent" class="max-w-md mx-auto relative min-h-screen pb-28 opacity-0 transition-opacity duration-500">
         <header class="p-6 flex justify-between items-center bg-slate-50 sticky top-0 z-10 backdrop-blur-md bg-opacity-80">
             <div>
                 <p class="text-slate-500 text-sm font-medium">Selamat datang,</p>
@@ -76,7 +128,6 @@
                 <h3 class="font-bold text-lg text-slate-800">Aktivitas Terkini</h3>
                 <span class="text-slate-400 text-sm font-medium" id="transactionCount">0 Transaksi</span>
             </div>
-
             <div id="recentList" class="space-y-3">
                  <div id="mobileEmptyState" class="hidden bg-white p-8 rounded-3xl text-center text-slate-400 shadow-sm border border-slate-100">
                     <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -96,30 +147,26 @@
 
     <div id="addModal" class="fixed inset-0 z-50 flex flex-col justify-end pointer-events-none hidden">
         <div id="modalOverlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm opacity-0 transition-opacity duration-300 pointer-events-none" onclick="closeModal()"></div>
-        
         <div id="modalSheet" class="bg-white rounded-t-[2.5rem] p-6 pb-10 relative z-10 pointer-events-auto sheet-enter h-[85vh] flex flex-col shadow-2xl">
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
-            
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-slate-800">Catat Transaksi</h2>
                 <button onclick="closeModal()" class="w-8 h-8 bg-slate-100 rounded-full text-slate-500 flex items-center justify-center active:scale-90 transition-transform">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-
             <form id="transactionForm" class="space-y-4 overflow-y-auto flex-1 pr-2">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Jenis</label>
-                        <select id="type" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl p-3.5 focus:ring-2 focus:ring-lime-500 focus:border-lime-500 outline-none" onchange="updateCategoryOptions()" required>
+                        <select id="type" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl p-3.5 focus:ring-2 focus:ring-lime-500 outline-none" onchange="updateCategoryOptions()" required>
                             <option value="expense">Pengeluaran</option>
                             <option value="income">Pemasukan</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Kategori</label>
-                        <select id="category" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl p-3.5 focus:ring-2 focus:ring-lime-500 focus:border-lime-500 outline-none" required>
-                        </select>
+                        <select id="category" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl p-3.5 focus:ring-2 focus:ring-lime-500 outline-none" required></select>
                     </div>
                 </div>
                 <div>
@@ -135,7 +182,6 @@
                     <input type="number" id="amount" placeholder="50000" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl p-3.5 focus:ring-2 focus:ring-lime-500 outline-none text-lg font-bold" required>
                 </div>
             </form>
-            
             <div class="mt-4 pt-4 border-t border-slate-100">
                 <button onclick="document.getElementById('transactionForm').requestSubmit()" class="w-full bg-lime-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-lime-500/30 active:scale-95 transition-transform text-lg">
                     Simpan Data
@@ -145,21 +191,174 @@
     </div>
 
     <script>
-        // Fitur Ganti Nama (Tersimpan di LocalStorage)
+        // ==================== LOGIKA BIOMETRIK & PIN ====================
+        let savedPin = localStorage.getItem('nexaPin');
+        let biometricId = localStorage.getItem('nexaBiometricId');
+        let currentInput = "";
+        let isSettingNewPin = !savedPin; 
+
+        const pinMessage = document.getElementById('pinMessage');
+        const dots = document.getElementById('pinDots').children;
+        const loginScreen = document.getElementById('loginScreen');
+        const mainContent = document.getElementById('mainContent');
+        const bodyWrap = document.getElementById('bodyWrap');
+        const btnBiometric = document.getElementById('btnBiometric');
+
+        // Utils untuk Konversi Data Sensor
+        const bufferEncode = (value) => Uint8Array.from(value, c => c.charCodeAt(0));
+        const base64urlToUint8array = (base64url) => {
+            const padding = '='.repeat((4 - base64url.length % 4) % 4);
+            const base64 = (base64url + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const raw = window.atob(base64);
+            const output = new Uint8Array(raw.length);
+            for (let i = 0; i < raw.length; ++i) output[i] = raw.charCodeAt(i);
+            return output;
+        };
+
+        // Cek dukungan Biometrik di HP
+        const isBiometricSupported = window.PublicKeyCredential !== undefined;
+
+        if(isSettingNewPin) {
+            pinMessage.innerText = "Buat 4 digit PIN baru Anda";
+            pinMessage.classList.add('text-lime-400');
+        } else if (biometricId && isBiometricSupported) {
+            // Tampilkan ikon fingerprint dan auto-trigger jika sudah terdaftar
+            btnBiometric.classList.remove('hidden');
+            setTimeout(() => verifyBiometric(), 500); // Auto scan saat buka aplikasi
+        }
+
+        // --- Fungsi Daftarkan Wajah/Sidik Jari Baru ---
+        async function registerBiometric() {
+            if(!isBiometricSupported) return alert("HP / Browser Anda belum mendukung fitur Biometrik Web.");
+            try {
+                const cred = await navigator.credentials.create({
+                    publicKey: {
+                        challenge: bufferEncode("nexa-register-challenge"),
+                        rp: { name: "NexaFlow Cashflow", id: window.location.hostname },
+                        user: { id: bufferEncode("user-nexa"), name: "Sultan", displayName: "Pengguna" },
+                        pubKeyCredParams: [{alg: -7, type: "public-key"}], // Algoritma standar
+                        authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+                        timeout: 60000
+                    }
+                });
+                // Simpan ID Kredensial ke memori HP
+                localStorage.setItem('nexaBiometricId', cred.id);
+                alert("✨ Sukses! Sensor Biometrik berhasil diaktifkan.");
+                unlockApp();
+            } catch (e) {
+                console.error(e);
+                alert("Pendaftaran Biometrik dibatalkan. Menggunakan PIN sebagai default.");
+                unlockApp();
+            }
+        }
+
+        // --- Fungsi Verifikasi Wajah/Sidik Jari untuk Masuk ---
+        async function verifyBiometric() {
+            try {
+                if(!biometricId) return;
+                await navigator.credentials.get({
+                    publicKey: {
+                        challenge: bufferEncode("nexa-login-challenge"),
+                        rpId: window.location.hostname,
+                        allowCredentials: [{
+                            type: "public-key",
+                            id: base64urlToUint8array(biometricId)
+                        }],
+                        userVerification: "required",
+                        timeout: 60000
+                    }
+                });
+                unlockApp(); // Jika wajah/jari cocok, buka aplikasi
+            } catch (e) {
+                console.log("Sensor dibatalkan atau gagal", e);
+                pinMessage.innerText = "Sensor gagal, silakan gunakan PIN.";
+            }
+        }
+
+        function updatePinUI() {
+            for(let i=0; i<4; i++) {
+                if(i < currentInput.length) {
+                    dots[i].classList.replace('border-slate-600', 'border-lime-400');
+                    dots[i].classList.add('bg-lime-400');
+                } else {
+                    dots[i].classList.replace('border-lime-400', 'border-slate-600');
+                    dots[i].classList.remove('bg-lime-400');
+                }
+            }
+        }
+
+        function pressKey(num) {
+            if(currentInput.length < 4) {
+                currentInput += num;
+                updatePinUI();
+            }
+            
+            if(currentInput.length === 4) {
+                setTimeout(() => {
+                    if(isSettingNewPin) {
+                        localStorage.setItem('nexaPin', currentInput);
+                        isSettingNewPin = false;
+                        savedPin = currentInput;
+                        
+                        // Setelah buat PIN, tawarkan Biometrik
+                        if(isBiometricSupported && window.location.hostname !== "") {
+                            if(confirm("PIN Tersimpan! Mau mengaktifkan Login pakai Face ID / Sidik Jari agar lebih cepat?")) {
+                                registerBiometric();
+                            } else {
+                                unlockApp();
+                            }
+                        } else {
+                            unlockApp();
+                        }
+                    } else {
+                        if(currentInput === savedPin) {
+                            unlockApp();
+                        } else {
+                            pinMessage.innerText = "PIN Salah, coba lagi!";
+                            pinMessage.classList.add('shake-error');
+                            setTimeout(() => pinMessage.classList.remove('shake-error'), 400);
+                            currentInput = "";
+                            updatePinUI();
+                        }
+                    }
+                }, 100);
+            }
+        }
+
+        function deleteKey() {
+            if(currentInput.length > 0) {
+                currentInput = currentInput.slice(0, -1);
+                updatePinUI();
+            }
+        }
+
+        function unlockApp() {
+            loginScreen.classList.add('fade-out');
+            mainContent.classList.remove('opacity-0');
+            bodyWrap.classList.remove('overflow-hidden'); 
+        }
+
+        function resetPinApp() {
+            if(confirm("Jika Anda mereset PIN, seluruh data Anda akan dihapus demi keamanan. Lanjutkan?")) {
+                localStorage.clear(); 
+                location.reload(); 
+            }
+        }
+        // ============================================================
+
+        // (Kode Dashboard Tetap Sama)
         const savedName = localStorage.getItem('userDisplayName') || 'Sultan';
         document.getElementById('userName').innerText = savedName;
 
         window.editName = () => {
             const currentName = localStorage.getItem('userDisplayName') || 'Sultan';
             const newName = prompt('Masukkan nama panggilan Anda:', currentName);
-            
             if (newName && newName.trim() !== '') {
                 localStorage.setItem('userDisplayName', newName.trim());
                 document.getElementById('userName').innerText = newName.trim();
             }
         };
 
-        // Data & State
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
         const categories = {
             expense: ['Makan & Minum', 'Transportasi', 'Belanja', 'Tagihan & Utang', 'Hiburan', 'Kesehatan', 'Lainnya'],
@@ -275,7 +474,6 @@
                 sheet.classList.remove('sheet-enter');
                 sheet.classList.add('sheet-enter-active');
             }, 10);
-            document.body.style.overflow = 'hidden';
         };
 
         window.closeModal = () => {
@@ -288,7 +486,6 @@
                 modal.classList.add('hidden');
                 sheet.classList.remove('sheet-leave-active');
                 sheet.classList.add('sheet-enter');
-                document.body.style.overflow = ''; 
             }, 300);
         };
 
